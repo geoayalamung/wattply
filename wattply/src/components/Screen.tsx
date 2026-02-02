@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
-import { SafeAreaView, StyleSheet, type ViewStyle } from 'react-native';
+import { StyleSheet, type ViewStyle } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { colors, spacing } from '../theme';
 
 type ScreenProps = {
   children: ReactNode;
@@ -13,8 +16,8 @@ export function Screen({ children, style }: ScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    backgroundColor: '#0B0B0F',
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    backgroundColor: colors.background,
   },
 });
