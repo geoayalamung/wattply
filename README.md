@@ -1,2 +1,2 @@
 # wattply
-wattply
+wattply App
