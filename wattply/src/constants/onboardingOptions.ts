@@ -3,6 +3,7 @@ import type { Appliance, HomeType, Province } from '../types/onboarding';
 export const provinceOptions: { value: Province; label: string; description: string }[] = [
   { value: 'bc', label: 'British Columbia', description: 'BC Hydro patterns (condo mode).' },
   { value: 'ontario', label: 'Ontario', description: 'Ontario residential patterns.' },
+  { value: 'alberta', label: 'Alberta', description: 'Alberta residential patterns.' },
 ];
 
 export const homeOptions: { value: HomeType; label: string; description: string }[] = [

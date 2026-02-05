@@ -1,23 +1,27 @@
-import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
-import { Card } from '../../src/components/Card';
 import { OptionPill } from '../../src/components/OptionPill';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { Screen } from '../../src/components/Screen';
 import {
   applianceOptions,
+  homeOptions,
+  provinceOptions,
   quietEndOptions,
   quietStartOptions,
 } from '../../src/constants/onboardingOptions';
 import { getOnboarding, saveOnboarding } from '../../src/storage/onboarding';
 import { colors, spacing } from '../../src/theme';
-import type { Appliance, OnboardingData } from '../../src/types/onboarding';
+import type { Appliance, OnboardingData, Province } from '../../src/types/onboarding';
 
 export default function Settings() {
+  const router = useRouter();
   const [profile, setProfile] = useState<OnboardingData | null>(null);
+  const [province, setProvince] = useState<Province>('bc');
   const [appliances, setAppliances] = useState<Appliance[]>([]);
+  const [hasQuietHours, setHasQuietHours] = useState(true);
   const [quietStart, setQuietStart] = useState('10 PM');
   const [quietEnd, setQuietEnd] = useState('7 AM');
 
@@ -29,7 +33,9 @@ export default function Settings() {
       }
       setProfile(data);
       if (data) {
+        setProvince(data.province ?? 'bc');
         setAppliances(data.appliances);
+        setHasQuietHours(data.hasQuietHours ?? true);
         setQuietStart(data.quietHours.start);
         setQuietEnd(data.quietHours.end);
       }
@@ -45,6 +51,8 @@ export default function Settings() {
     }
     const nextProfile: OnboardingData = {
       ...profile,
+      province,
+      hasQuietHours,
       appliances,
       quietHours: { start: quietStart, end: quietEnd },
     };
@@ -53,81 +61,129 @@ export default function Settings() {
   };
 
   return (
-    <Screen>
+    <Screen style={styles.screen}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Preferences</Text>
-        <Text style={styles.subtitle}>Adjust quiet hours and appliance tracking.</Text>
+        <Text style={styles.title}>Settings</Text>
+        <Text style={styles.subtitle}>Simple preferences for your home.</Text>
 
         {!profile ? (
-          <Card>
-            <Text style={styles.cardTitle}>No setup data yet</Text>
-            <Text style={styles.cardBody}>
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyTitle}>No setup data yet</Text>
+            <Text style={styles.emptyBody}>
               Complete onboarding to personalize your recommendations.
             </Text>
-            <Link href="/onboarding" asChild>
-              <PrimaryButton label="Start onboarding" />
-            </Link>
-          </Card>
+            <PrimaryButton label="Start onboarding" onPress={() => router.push('/onboarding')} />
+          </View>
         ) : (
           <View style={styles.stack}>
-            <Card>
-              <Text style={styles.cardTitle}>Quiet hours</Text>
-              <Text style={styles.cardBody}>Current: {quietStart} – {quietEnd}</Text>
-              <Text style={styles.sectionLabel}>Start</Text>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Location</Text>
+              <Text style={styles.sectionHint}>Used for pricing and peak windows.</Text>
               <View style={styles.pillRow}>
-                {quietStartOptions.map((option) => (
+                {provinceOptions.map((option) => (
                   <OptionPill
-                    key={option}
-                    label={option}
-                    selected={quietStart === option}
-                    onPress={() => setQuietStart(option)}
+                    key={option.value}
+                    label={option.label}
+                    selected={province === option.value}
+                    onPress={() => setProvince(option.value)}
                   />
                 ))}
               </View>
-              <Text style={styles.sectionLabel}>End</Text>
-              <View style={styles.pillRow}>
-                {quietEndOptions.map((option) => (
-                  <OptionPill
-                    key={option}
-                    label={option}
-                    selected={quietEnd === option}
-                    onPress={() => setQuietEnd(option)}
-                  />
-                ))}
-              </View>
-            </Card>
+            </View>
 
-            <Card>
-              <Text style={styles.cardTitle}>Appliances</Text>
-              <Text style={styles.cardBody}>Choose the appliances you run often.</Text>
-              <View style={styles.pillRow}>
-                {applianceOptions.map((option) => {
-                  const selected = appliances.includes(option.value);
-                  return (
-                    <OptionPill
-                      key={option.value}
-                      label={option.label}
-                      selected={selected}
-                      onPress={() =>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Appliances</Text>
+              {applianceOptions.map((option) => {
+                const selected = appliances.includes(option.value);
+                return (
+                  <View key={option.value} style={styles.row}>
+                    <Text style={styles.rowLabel}>{option.label}</Text>
+                    <Switch
+                      value={selected}
+                      onValueChange={() =>
                         setAppliances((prev) =>
                           selected
                             ? prev.filter((item) => item !== option.value)
                             : [...prev, option.value],
                         )
                       }
+                      trackColor={{ false: colors.border, true: colors.green }}
+                      thumbColor={colors.card}
                     />
-                  );
-                })}
-              </View>
-            </Card>
+                  </View>
+                );
+              })}
+            </View>
 
-            <Card>
-              <Text style={styles.cardTitle}>Home details</Text>
-              <Text style={styles.cardBody}>Home type: {profile.homeType === 'condo' ? 'Condo' : 'House'}</Text>
-              <Text style={styles.cardBody}>
-                EV charging: {profile.hasEVCharging ? 'Yes' : 'No'}
-              </Text>
-            </Card>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Quiet hours</Text>
+              <Text style={styles.sectionHint}>Current: {quietStart} – {quietEnd}</Text>
+              <View style={styles.row}>
+                <Text style={styles.rowLabel}>Enabled</Text>
+                <Switch
+                  value={hasQuietHours}
+                  onValueChange={setHasQuietHours}
+                  trackColor={{ false: colors.border, true: colors.green }}
+                  thumbColor={colors.card}
+                />
+              </View>
+              {hasQuietHours ? (
+                <>
+                  <Text style={styles.sectionLabel}>Start</Text>
+                  <View style={styles.pillRow}>
+                    {quietStartOptions.map((option) => (
+                      <OptionPill
+                        key={option}
+                        label={option}
+                        selected={quietStart === option}
+                        onPress={() => setQuietStart(option)}
+                      />
+                    ))}
+                  </View>
+                  <Text style={styles.sectionLabel}>End</Text>
+                  <View style={styles.pillRow}>
+                    {quietEndOptions.map((option) => (
+                      <OptionPill
+                        key={option}
+                        label={option}
+                        selected={quietEnd === option}
+                        onPress={() => setQuietEnd(option)}
+                      />
+                    ))}
+                  </View>
+                </>
+              ) : null}
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Home</Text>
+              <Text style={styles.sectionLabel}>Home type</Text>
+              <View style={styles.pillRow}>
+                {homeOptions.map((option) => (
+                  <OptionPill
+                    key={option.value}
+                    label={option.label}
+                    selected={profile.homeType === option.value}
+                    onPress={() =>
+                      setProfile((prev) =>
+                        prev ? { ...prev, homeType: option.value } : prev,
+                      )
+                    }
+                  />
+                ))}
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.rowLabel}>EV charging</Text>
+                <Switch
+                  value={profile.hasEVCharging}
+                  onValueChange={(value) =>
+                    setProfile((prev) => (prev ? { ...prev, hasEVCharging: value } : prev))
+                  }
+                  trackColor={{ false: colors.border, true: colors.green }}
+                  thumbColor={colors.card}
+                />
+              </View>
+            </View>
 
             <PrimaryButton label="Save settings" onPress={handleSave} />
           </View>
@@ -138,6 +194,9 @@ export default function Settings() {
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    backgroundColor: colors.neutralBg,
+  },
   container: {
     paddingBottom: spacing.xl,
   },
@@ -155,14 +214,19 @@ const styles = StyleSheet.create({
   stack: {
     gap: spacing.lg,
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+  section: {
+    paddingVertical: spacing.md,
+    borderTopWidth: 1,
+    borderColor: colors.border,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '600',
     color: colors.text,
     marginBottom: spacing.sm,
   },
-  cardBody: {
-    fontSize: 14,
+  sectionHint: {
+    fontSize: 13,
     color: colors.subtext,
     marginBottom: spacing.sm,
   },
@@ -179,5 +243,29 @@ const styles = StyleSheet.create({
     color: colors.muted,
     marginTop: spacing.sm,
     marginBottom: spacing.xs,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+  },
+  rowLabel: {
+    fontSize: 15,
+    color: colors.text,
+  },
+  emptyState: {
+    paddingVertical: spacing.lg,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.sm,
+  },
+  emptyBody: {
+    fontSize: 14,
+    color: colors.subtext,
+    marginBottom: spacing.md,
   },
 });

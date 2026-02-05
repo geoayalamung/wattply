@@ -1,4 +1,5 @@
-import type { Appliance } from '../types/onboarding';
+import { provinceRateAdjustments } from '../constants/rates';
+import type { Appliance, Province } from '../types/onboarding';
 
 export type EnergyState = 'green' | 'yellow' | 'red';
 
@@ -72,6 +73,30 @@ export function getNextChange(now: Date): Date {
   return next;
 }
 
+export function getNextGreenWindow(now: Date): { start: Date; end: Date } {
+  const minutes = now.getHours() * 60 + now.getMinutes();
+  const start = new Date(now);
+  const end = new Date(now);
+
+  if (minutes >= GREEN_START) {
+    start.setHours(21, 0, 0, 0);
+    end.setDate(end.getDate() + 1);
+    end.setHours(7, 0, 0, 0);
+    return { start, end };
+  }
+
+  if (minutes < GREEN_END) {
+    start.setHours(0, 0, 0, 0);
+    end.setHours(7, 0, 0, 0);
+    return { start, end };
+  }
+
+  start.setHours(21, 0, 0, 0);
+  end.setDate(end.getDate() + 1);
+  end.setHours(7, 0, 0, 0);
+  return { start, end };
+}
+
 export function formatTime(date: Date): string {
   return date.toLocaleTimeString(undefined, {
     hour: 'numeric',
@@ -105,6 +130,28 @@ export function getEstimatedSavings(state: EnergyState): string {
     default:
       return 'Estimated savings: Moderate depending on your usage.';
   }
+}
+
+export function getRateAdjustment(state: EnergyState, province: Province = 'bc'): number {
+  const rates = provinceRateAdjustments[province];
+  if (state === 'green') {
+    return rates.green;
+  }
+  if (state === 'red') {
+    return rates.red;
+  }
+  return rates.yellow;
+}
+
+export function getNextEnergyState(now: Date): EnergyState {
+  const nextChange = getNextChange(now);
+  const nextStateTime = new Date(nextChange);
+  nextStateTime.setMinutes(nextStateTime.getMinutes() + 1);
+  return getEnergyState(nextStateTime);
+}
+
+export function getNextRateAdjustment(now: Date, province: Province = 'bc'): number {
+  return getRateAdjustment(getNextEnergyState(now), province);
 }
 
 function buildApplianceLabel(appliances: Appliance[]): string {

@@ -8,21 +8,28 @@ export default function Info() {
   return (
     <Screen>
       <View style={styles.header}>
-        <Text style={styles.title}>About Wattply</Text>
-        <Text style={styles.subtitle}>Quick details about the app.</Text>
+        <Text style={styles.title}>Tips</Text>
+        <Text style={styles.subtitle}>Simple ways to save during the day.</Text>
       </View>
 
       <Card>
-        <Text style={styles.cardTitle}>What this does</Text>
+        <Text style={styles.cardTitle}>Green hours</Text>
         <Text style={styles.cardBody}>
-          Wattply helps you time energy-heavy appliances with BC Hydro traffic-light guidance.
+          Run laundry, dishwasher, or EV charging when the light is green.
         </Text>
       </Card>
 
       <Card>
-        <Text style={styles.cardTitle}>How to use</Text>
+        <Text style={styles.cardTitle}>Yellow hours</Text>
         <Text style={styles.cardBody}>
-          Check the Home tab for the current status, then adjust Settings to personalize tips.
+          Normal demand. Use essentials now, save heavy loads for green hours.
+        </Text>
+      </Card>
+
+      <Card>
+        <Text style={styles.cardTitle}>Red hours</Text>
+        <Text style={styles.cardBody}>
+          High demand. Avoid heavy appliances if possible and wait for the next change.
         </Text>
       </Card>
     </Screen>

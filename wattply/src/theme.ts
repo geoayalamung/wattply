@@ -1,13 +1,17 @@
 export const colors = {
   background: '#F5F6F8',
+  neutralBg: '#F7F7F7',
   card: '#FFFFFF',
-  text: '#1C1F2A',
-  subtext: '#586173',
-  border: '#E1E5EE',
+  text: '#111111',
+  subtext: '#3F3F3F',
+  border: '#E6E6E6',
   accent: '#0D3B66',
   green: '#1EB980',
   yellow: '#F5A524',
   red: '#E74C3C',
+  greenBg: '#DDF3E1',
+  yellowBg: '#FFF4CC',
+  redBg: '#F9DADA',
   muted: '#9AA3B2',
 };
 
