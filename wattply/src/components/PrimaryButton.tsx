@@ -36,7 +36,7 @@ export function PrimaryButton({
 
 const styles = StyleSheet.create({
   base: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.yellow,
     borderRadius: radii.md,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
